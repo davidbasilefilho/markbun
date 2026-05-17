@@ -47,6 +47,10 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  console.error(style.red("Error:"), err instanceof Error ? err.message : String(err));
+  if (err instanceof Error && err.message.startsWith(style.red("markbun: error"))) {
+    console.error(err.message);
+  } else {
+    console.error(style.red("Error:"), err instanceof Error ? err.message : String(err));
+  }
   process.exit(1);
 });

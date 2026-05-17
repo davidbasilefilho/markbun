@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import pkg from "../package.json" with { type: "json" };
 import { style } from "./ansi";
 
@@ -36,18 +38,20 @@ ${style.bold("EXAMPLES")}
 
 const DEFAULT_COLUMNS = 80;
 
-export interface CliOptions {
-  file?: string;
-  outputFormat: "ansi" | "html";
-  outFile?: string;
-  columns: number;
-  noColor: boolean;
-  hyperlinks: boolean;
-  light: boolean;
-  images: boolean;
-  version: boolean;
-  help: boolean;
-}
+const CliOptionsSchema = z.object({
+  file: z.string().optional(),
+  outputFormat: z.enum(["ansi", "html"]).default("ansi"),
+  outFile: z.string().optional(),
+  columns: z.number().int().positive().default(DEFAULT_COLUMNS),
+  noColor: z.boolean().default(false),
+  hyperlinks: z.boolean().default(false),
+  light: z.boolean().default(false),
+  images: z.boolean().default(false),
+  version: z.boolean().default(false),
+  help: z.boolean().default(false),
+});
+
+export type CliOptions = z.infer<typeof CliOptionsSchema>;
 
 /** Print help text and exit. */
 export function printHelp(): void {
@@ -59,9 +63,13 @@ export function printVersion(): void {
   console.log(pkg.version);
 }
 
-/** Parse CLI arguments into structured options. */
+function formatValidationError(message: string): string {
+  return `${style.red("markbun: error")}\n  ${style.yellow(message)}\n\n  For usage information, run: ${style.cyan("markbun --help")}`;
+}
+
+/** Parse CLI arguments into structured options with zod validation. */
 export function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = {
+  const options: Record<string, unknown> = {
     outputFormat: "ansi",
     columns: DEFAULT_COLUMNS,
     noColor: false,
@@ -90,10 +98,7 @@ export function parseArgs(argv: string[]): CliOptions {
       case "--columns":
       case "-w": {
         i++;
-        const val = parseInt(args[i] ?? "", 10);
-        if (!Number.isNaN(val) && val >= 0) {
-          options.columns = val;
-        }
+        options.columns = parseInt(args[i] ?? "", 10);
         break;
       }
       case "--no-color":
@@ -119,12 +124,21 @@ export function parseArgs(argv: string[]): CliOptions {
       default:
         if (!arg.startsWith("-")) {
           options.file = arg;
+        } else {
+          throw new Error(formatValidationError(`Unknown flag: ${arg}`));
         }
         break;
     }
   }
 
-  return options;
+  const result = CliOptionsSchema.safeParse(options);
+  if (!result.success) {
+    const first = result.error.issues[0];
+    const message = first ? `${first.path.join(".")}: ${first.message}` : "Invalid arguments";
+    throw new Error(formatValidationError(message));
+  }
+
+  return result.data;
 }
 
 /** Read markdown input from a file or stdin. */

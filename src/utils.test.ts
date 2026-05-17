@@ -50,9 +50,8 @@ describe("parseArgs", () => {
     expect(opts.columns).toBe(40);
   });
 
-  test("ignores invalid --columns value", () => {
-    const opts = parseArgs(["--columns", "abc"]);
-    expect(opts.columns).toBe(80);
+  test("throws on non-numeric --columns value", () => {
+    expect(() => parseArgs(["--columns", "abc"])).toThrow();
   });
 
   test("parses --no-color", () => {
@@ -115,10 +114,16 @@ describe("parseArgs", () => {
     expect(opts.outputFormat).toBe("html");
   });
 
-  test("ignores unknown flags starting with dash", () => {
-    const opts = parseArgs(["--unknown"]);
-    // Should not throw, unknown flags are skipped
-    expect(opts.help).toBe(false);
+  test("throws on unknown flag", () => {
+    expect(() => parseArgs(["--unknown"])).toThrow("Unknown flag");
+  });
+
+  test("throws on invalid column value of zero", () => {
+    expect(() => parseArgs(["--columns", "0"])).toThrow("columns");
+  });
+
+  test("throws on negative column value", () => {
+    expect(() => parseArgs(["--columns", "-1"])).toThrow("columns");
   });
 });
 
