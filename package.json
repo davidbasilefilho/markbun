@@ -21,17 +21,17 @@
   },
   "funding": "https://github.com/sponsors/davidbasilefilho",
   "bin": {
-    "markbun": "./bin/markbun"
+    "markbun": "./dist/markbun"
   },
   "files": [
-    "bin",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "type": "module",
   "scripts": {
     "start": "bun src/index.ts",
-    "build": "bun build ./src/index.ts --outfile ./bin/markbun --target bun",
+    "build": "bun build ./src/index.ts --outfile ./dist/markbun --target bun",
     "build:compile": "bun build ./src/index.ts --compile --outfile ./bin/markbun",
     "format": "oxfmt --write",
     "lint": "oxlint --fix",
