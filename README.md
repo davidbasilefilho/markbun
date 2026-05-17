@@ -7,14 +7,7 @@ No extra dependencies. Fast. ANSI-colored terminal output and HTML export.
 ## Install
 
 ```bash
-# via npm
-npm install -g markbun
-
-# or with bun
 bun install -g markbun
-
-# or directly from source
-bun link
 ```
 
 ## Usage
