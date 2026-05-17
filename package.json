@@ -1,0 +1,52 @@
+{
+  "name": "markbun",
+  "version": "0.1.0",
+  "description": "Render markdown beautifully in your terminal — powered by Bun.markdown",
+  "keywords": [
+    "ansi",
+    "bun",
+    "cli",
+    "markdown",
+    "render",
+    "terminal"
+  ],
+  "homepage": "https://github.com/davidbasilefilho/markbun#readme",
+  "bugs": {
+    "url": "https://github.com/davidbasilefilho/markbun/issues"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidbasilefilho/markbun.git"
+  },
+  "bin": {
+    "markbun": "./bin/markbun"
+  },
+  "files": [
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "scripts": {
+    "start": "bun src/index.ts",
+    "build": "bun build ./src/index.ts --outfile ./bin/markbun --target bun",
+    "build:compile": "bun build ./src/index.ts --compile --outfile markbun",
+    "format": "oxfmt --write",
+    "lint": "oxlint --fix",
+    "check": "bun run format && bun run lint",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "oxfmt": "^0.50.0",
+    "oxlint": "^1.65.0",
+    "oxlint-tsgolint": "^0.22.1"
+  },
+  "peerDependencies": {
+    "typescript": "^6"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  }
+}
