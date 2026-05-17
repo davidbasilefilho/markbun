@@ -20,4 +20,5 @@ jobs:
           install_args: "bun node"
           cache: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: bun install --frozen-lockfile
       - run: npm publish --provenance --access public
