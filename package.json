@@ -1,6 +1,6 @@
 {
   "name": "markbun",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Render markdown beautifully in your terminal — powered by Bun.markdown",
   "keywords": [
     "ansi",
