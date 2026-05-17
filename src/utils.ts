@@ -1,3 +1,4 @@
+import pkg from "../package.json" with { type: "json" };
 import { style } from "./ansi";
 
 const BANNER = `${style.bold(style.cyan("markbun"))} ${style.dim("—")} ${style.italic("Render markdown with Bun.markdown")}`;
@@ -33,11 +34,13 @@ ${style.bold("EXAMPLES")}
   ${style.cyan("markbun")} ${style.yellow("article.md")} ${style.cyan("--columns")} ${style.yellow("60")} ${style.cyan("--no-color")}
 `;
 
+const DEFAULT_COLUMNS = 80;
+
 export interface CliOptions {
   file?: string;
   outputFormat: "ansi" | "html";
   outFile?: string;
-  columns?: number;
+  columns: number;
   noColor: boolean;
   hyperlinks: boolean;
   light: boolean;
@@ -52,15 +55,15 @@ export function printHelp(): void {
 }
 
 /** Print version and exit. */
-export async function printVersion(): Promise<void> {
-  const pkg = await import("../package.json");
-  console.log((pkg as any).default.version);
+export function printVersion(): void {
+  console.log(pkg.version);
 }
 
 /** Parse CLI arguments into structured options. */
 export function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     outputFormat: "ansi",
+    columns: DEFAULT_COLUMNS,
     noColor: false,
     hyperlinks: false,
     light: false,
@@ -69,7 +72,7 @@ export function parseArgs(argv: string[]): CliOptions {
     help: false,
   };
 
-  const args = argv.slice(2);
+  const args = argv;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
 

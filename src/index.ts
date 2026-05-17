@@ -4,7 +4,7 @@ import { renderToHtml } from "./html";
 import { parseArgs, printHelp, printVersion, readInput } from "./utils";
 
 async function main(): Promise<void> {
-  const opts = parseArgs(process.argv);
+  const opts = parseArgs(process.argv.slice(2));
 
   if (opts.help) {
     printHelp();
@@ -12,7 +12,7 @@ async function main(): Promise<void> {
   }
 
   if (opts.version) {
-    await printVersion();
+    printVersion();
     process.exit(0);
   }
 
