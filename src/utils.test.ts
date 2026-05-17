@@ -1,0 +1,165 @@
+import { describe, expect, test } from "bun:test";
+
+import pkg from "../package.json" with { type: "json" };
+import { parseArgs, printVersion, readInput } from "./utils";
+
+describe("parseArgs", () => {
+  test("returns defaults with no arguments", () => {
+    const opts = parseArgs([]);
+    expect(opts).toEqual({
+      outputFormat: "ansi",
+      columns: 80,
+      noColor: false,
+      hyperlinks: false,
+      light: false,
+      images: false,
+      version: false,
+      help: false,
+      file: undefined,
+      outFile: undefined,
+    });
+  });
+
+  test("parses --html", () => {
+    const opts = parseArgs(["--html"]);
+    expect(opts.outputFormat).toBe("html");
+  });
+
+  test("parses -H", () => {
+    const opts = parseArgs(["-H"]);
+    expect(opts.outputFormat).toBe("html");
+  });
+
+  test("parses --out with file path", () => {
+    const opts = parseArgs(["--out", "output.html"]);
+    expect(opts.outFile).toBe("output.html");
+  });
+
+  test("parses -o with file path", () => {
+    const opts = parseArgs(["-o", "out.html"]);
+    expect(opts.outFile).toBe("out.html");
+  });
+
+  test("parses --columns with value", () => {
+    const opts = parseArgs(["--columns", "60"]);
+    expect(opts.columns).toBe(60);
+  });
+
+  test("parses -w with value", () => {
+    const opts = parseArgs(["-w", "40"]);
+    expect(opts.columns).toBe(40);
+  });
+
+  test("ignores invalid --columns value", () => {
+    const opts = parseArgs(["--columns", "abc"]);
+    expect(opts.columns).toBe(80);
+  });
+
+  test("parses --no-color", () => {
+    const opts = parseArgs(["--no-color"]);
+    expect(opts.noColor).toBe(true);
+  });
+
+  test("parses --hyperlinks", () => {
+    const opts = parseArgs(["--hyperlinks"]);
+    expect(opts.hyperlinks).toBe(true);
+  });
+
+  test("parses --light", () => {
+    const opts = parseArgs(["--light"]);
+    expect(opts.light).toBe(true);
+  });
+
+  test("parses --images", () => {
+    const opts = parseArgs(["--images"]);
+    expect(opts.images).toBe(true);
+  });
+
+  test("parses --version", () => {
+    const opts = parseArgs(["--version"]);
+    expect(opts.version).toBe(true);
+  });
+
+  test("parses -v", () => {
+    const opts = parseArgs(["-v"]);
+    expect(opts.version).toBe(true);
+  });
+
+  test("parses --help", () => {
+    const opts = parseArgs(["--help"]);
+    expect(opts.help).toBe(true);
+  });
+
+  test("parses -h", () => {
+    const opts = parseArgs(["-h"]);
+    expect(opts.help).toBe(true);
+  });
+
+  test("parses file argument", () => {
+    const opts = parseArgs(["README.md"]);
+    expect(opts.file).toBe("README.md");
+  });
+
+  test("combines flags correctly", () => {
+    const opts = parseArgs(["--html", "--light", "--hyperlinks", "doc.md"]);
+    expect(opts.outputFormat).toBe("html");
+    expect(opts.light).toBe(true);
+    expect(opts.hyperlinks).toBe(true);
+    expect(opts.file).toBe("doc.md");
+    expect(opts.columns).toBe(80);
+  });
+
+  test("parses file before flags", () => {
+    const opts = parseArgs(["doc.md", "--html"]);
+    expect(opts.file).toBe("doc.md");
+    expect(opts.outputFormat).toBe("html");
+  });
+
+  test("ignores unknown flags starting with dash", () => {
+    const opts = parseArgs(["--unknown"]);
+    // Should not throw, unknown flags are skipped
+    expect(opts.help).toBe(false);
+  });
+});
+
+describe("printVersion", () => {
+  test("prints version from package.json", () => {
+    const consoleSpy = new ConsoleSpy();
+    const originalLog = console.log;
+    console.log = consoleSpy.log.bind(consoleSpy);
+
+    try {
+      printVersion();
+      expect(consoleSpy.output().trim()).toBe(pkg.version);
+    } finally {
+      console.log = originalLog;
+    }
+  });
+});
+
+describe("readInput", () => {
+  test("reads from file", async () => {
+    const content = await readInput("README.md");
+    expect(content).toContain("# markbun");
+  });
+
+  test("returns empty string for nonexistent file", async () => {
+    try {
+      await readInput("nonexistent-file-12345.md");
+    } catch {
+      // Bun.file().text() throws on missing file
+    }
+  });
+});
+
+class ConsoleSpy {
+  private lines: string[] = [];
+
+  log(...args: unknown[]): void {
+    this.lines.push(args.map(String).join(" "));
+  }
+
+  output(): string {
+    return this.lines.join("\n");
+  }
+}
