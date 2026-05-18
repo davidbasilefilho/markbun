@@ -148,11 +148,11 @@ describe("readInput", () => {
     expect(content).toContain("# markbun");
   });
 
-  test("returns empty string for nonexistent file", async () => {
+  test("throws on nonexistent file", async () => {
     try {
       await readInput("nonexistent-file-12345.md");
     } catch {
-      // Bun.file().text() throws on missing file
+      // readInput checks existence first and throws formatted error
     }
   });
 });

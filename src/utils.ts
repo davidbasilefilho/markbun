@@ -3,13 +3,16 @@ import { z } from "zod";
 import pkg from "../package.json" with { type: "json" };
 import { style } from "./ansi";
 
-const BANNER = `${style.bold(style.cyan("markbun"))} ${style.dim("—")} ${style.italic("Render markdown with Bun.markdown")}`;
+export const CLI_NAME = "markbun";
+const CLI_HELP_CMD = `${CLI_NAME} --help`;
+
+const BANNER = `${style.bold(style.cyan(CLI_NAME))} ${style.dim("—")} ${style.italic("Render markdown with Bun.markdown")}`;
 
 const USAGE = `
 ${BANNER}
 
 ${style.bold("USAGE")}
-  ${style.cyan("markbun")} ${style.dim("[options]")} ${style.yellow("<file>")}
+  ${style.cyan(CLI_NAME)} ${style.dim("[options]")} ${style.yellow("<file>")}
 
 ${style.bold("OPTIONS")}
   ${style.cyan("--html")}, ${style.cyan("-H")}         ${style.dim("Output as HTML instead of ANSI")}
@@ -24,16 +27,16 @@ ${style.bold("OPTIONS")}
 
 ${style.bold("EXAMPLES")}
   ${style.dim("# Render a file to the terminal")}
-  ${style.cyan("markbun")} ${style.yellow("README.md")}
+  ${style.cyan(CLI_NAME)} ${style.yellow("README.md")}
 
   ${style.dim("# Render from stdin")}
-  ${style.cyan("cat README.md | markbun")}
+  ${style.cyan("cat README.md | " + CLI_NAME)}
 
   ${style.dim("# Export to HTML")}
-  ${style.cyan("markbun")} ${style.yellow("doc.md")} ${style.cyan("--html")} ${style.cyan("-o")} ${style.yellow("doc.html")}
+  ${style.cyan(CLI_NAME)} ${style.yellow("doc.md")} ${style.cyan("--html")} ${style.cyan("-o")} ${style.yellow("doc.html")}
 
   ${style.dim("# Custom width, no colors")}
-  ${style.cyan("markbun")} ${style.yellow("article.md")} ${style.cyan("--columns")} ${style.yellow("60")} ${style.cyan("--no-color")}
+  ${style.cyan(CLI_NAME)} ${style.yellow("article.md")} ${style.cyan("--columns")} ${style.yellow("60")} ${style.cyan("--no-color")}
 `;
 
 const DEFAULT_COLUMNS = 80;
@@ -51,6 +54,7 @@ const CliOptionsSchema = z.object({
   help: z.boolean().default(false),
 });
 
+/** Parsed CLI options after validation. */
 export type CliOptions = z.infer<typeof CliOptionsSchema>;
 
 /** Print help text and exit. */
@@ -64,25 +68,23 @@ export function printVersion(): void {
 }
 
 function formatValidationError(message: string): string {
-  return `${style.red("markbun: error")}\n  ${style.yellow(message)}\n\n  For usage information, run: ${style.cyan("markbun --help")}`;
+  return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow(message)}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
+}
+
+function formatFileNotFound(file: string): string {
+  return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow("file not found")}: ${style.bold(file)}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
+}
+
+export function formatNoInput(): string {
+  return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow("no input provided. Pass a file or pipe markdown via stdin.")}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
 }
 
 /** Parse CLI arguments into structured options with zod validation. */
 export function parseArgs(argv: string[]): CliOptions {
-  const options: Record<string, unknown> = {
-    outputFormat: "ansi",
-    columns: DEFAULT_COLUMNS,
-    noColor: false,
-    hyperlinks: false,
-    light: false,
-    images: false,
-    version: false,
-    help: false,
-  };
+  const options: Record<string, unknown> = {};
 
-  const args = argv;
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]!;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
 
     switch (arg) {
       case "--html":
@@ -92,13 +94,13 @@ export function parseArgs(argv: string[]): CliOptions {
       case "--out":
       case "-o": {
         i++;
-        options.outFile = args[i];
+        options.outFile = argv[i];
         break;
       }
       case "--columns":
       case "-w": {
         i++;
-        options.columns = parseInt(args[i] ?? "", 10);
+        options.columns = parseInt(argv[i] ?? "", 10);
         break;
       }
       case "--no-color":
@@ -144,7 +146,15 @@ export function parseArgs(argv: string[]): CliOptions {
 /** Read markdown input from a file or stdin. */
 export async function readInput(file?: string): Promise<string> {
   if (file) {
-    return await Bun.file(file).text();
+    const fileRef = Bun.file(file);
+    if (!(await fileRef.exists())) {
+      throw new Error(formatFileNotFound(file));
+    }
+    return await fileRef.text();
+  }
+
+  if (process.stdin.isTTY) {
+    return "";
   }
 
   return await Bun.stdin.text();

@@ -35,7 +35,7 @@
     "build:compile": "bun build ./src/index.ts --compile --outfile ./bin/markbun",
     "format": "oxfmt --write",
     "lint": "oxlint --fix",
-    "check": "bun run format && bun run lint",
+    "check": "bun run format && bun run lint && bun test",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

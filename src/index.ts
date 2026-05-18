@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { renderToAnsi, renderToPlain, style } from "./ansi";
 import { renderToHtml } from "./html";
-import { parseArgs, printHelp, printVersion, readInput } from "./utils";
+import { CLI_NAME, formatNoInput, parseArgs, printHelp, printVersion, readInput } from "./utils";
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
@@ -19,7 +19,7 @@ async function main(): Promise<void> {
   const markdown = await readInput(opts.file);
 
   if (!markdown.trim()) {
-    console.error(style.yellow("No markdown content to render."));
+    console.error(formatNoInput());
     process.exit(1);
   }
 
@@ -47,7 +47,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  if (err instanceof Error && err.message.startsWith(style.red("markbun: error"))) {
+  if (err instanceof Error && err.message.startsWith(style.red(CLI_NAME + ": error"))) {
     console.error(err.message);
   } else {
     console.error(style.red("Error:"), err instanceof Error ? err.message : String(err));
