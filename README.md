@@ -2,7 +2,7 @@
 
 **Render markdown beautifully in your terminal** — powered by Bun's native [`Bun.markdown`](https://bun.sh/docs/runtime/markdown) engine.
 
-No extra dependencies. Fast. ANSI-colored terminal output and HTML export.
+Blazingly fast. ANSI-colored terminal output and HTML export.
 
 ## Install
 
@@ -54,7 +54,7 @@ markbun README.md --light
 - **Terminal rendering** via `Bun.markdown.ansi()` — headings, lists, tables, code blocks with syntax highlighting, blockquotes, links, images, and horizontal rules
 - **HTML export** via `Bun.markdown.html()` — GitHub Flavored Markdown support (tables, strikethrough, task lists)
 - **Stdin support** — pipe markdown directly into the tool
-- **Zero extra dependencies** — everything comes from Bun's standard library
+- **Fast** — built on Bun's native runtime with zero overhead
 
 ## Development
 
