@@ -99,6 +99,11 @@ describe("parseArgs", () => {
     expect(opts.file).toBe("README.md");
   });
 
+  test("detects URL as positional argument", () => {
+    const opts = parseArgs(["https://example.com/doc.md"]);
+    expect(opts.file).toBe("https://example.com/doc.md");
+  });
+
   test("combines flags correctly", () => {
     const opts = parseArgs(["--html", "--light", "--hyperlinks", "doc.md"]);
     expect(opts.outputFormat).toBe("html");
@@ -154,6 +159,63 @@ describe("readInput", () => {
     } catch {
       // readInput checks existence first and throws formatted error
     }
+  });
+
+  test("fetches markdown from URL", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response("# Remote Markdown")) as unknown as typeof globalThis.fetch;
+
+    try {
+      const result = await readInput("https://example.com/doc.md");
+      expect(result).toBe("# Remote Markdown");
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  test("throws on HTTP error status", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response("Not Found", {
+        status: 404,
+        statusText: "Not Found",
+      })) as unknown as typeof globalThis.fetch;
+
+    try {
+      await readInput("https://example.com/missing.md");
+    } catch (error: unknown) {
+      const msg = (error as Error).message;
+      expect(msg).toContain("markbun: error");
+      expect(msg).toContain("failed to fetch");
+      expect(msg).toContain("https://example.com/missing.md");
+      expect(msg).toContain("HTTP 404 Not Found");
+      return;
+    } finally {
+      globalThis.fetch = original;
+    }
+    expect.unreachable();
+  });
+
+  test("throws on network error", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      throw new TypeError("fetch failed");
+    }) as unknown as typeof globalThis.fetch;
+
+    try {
+      await readInput("https://example.com/error.md");
+    } catch (error: unknown) {
+      const msg = (error as Error).message;
+      expect(msg).toContain("markbun: error");
+      expect(msg).toContain("failed to fetch");
+      expect(msg).toContain("https://example.com/error.md");
+      expect(msg).toContain("unable to reach server");
+      return;
+    } finally {
+      globalThis.fetch = original;
+    }
+    expect.unreachable();
   });
 });
 
