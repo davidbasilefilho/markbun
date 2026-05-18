@@ -35,11 +35,20 @@ ${style.bold("EXAMPLES")}
   ${style.dim("# Export to HTML")}
   ${style.cyan(CLI_NAME)} ${style.yellow("doc.md")} ${style.cyan("--html")} ${style.cyan("-o")} ${style.yellow("doc.html")}
 
+  ${style.dim("# Fetch and render from a URL")}
+  ${style.cyan(CLI_NAME)} ${style.yellow("https://raw.githubusercontent.com/.../README.md")}
+
   ${style.dim("# Custom width, no colors")}
   ${style.cyan(CLI_NAME)} ${style.yellow("article.md")} ${style.cyan("--columns")} ${style.yellow("60")} ${style.cyan("--no-color")}
 `;
 
 const DEFAULT_COLUMNS = 80;
+const URL_PREFIXES = ["http://", "https://"] as const;
+
+/** Check if a string is an http or https URL. */
+function isUrl(value: string): boolean {
+  return URL_PREFIXES.some((prefix) => value.startsWith(prefix));
+}
 
 const CliOptionsSchema = z.object({
   file: z.string().optional(),
@@ -75,6 +84,11 @@ function formatFileNotFound(file: string): string {
   return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow("file not found")}: ${style.bold(file)}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
 }
 
+function formatFetchError(url: string, detail: string): string {
+  return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow("failed to fetch")} ${style.bold(url)}\n  ${style.yellow(detail)}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
+}
+
+/** Format error message when no input source is provided. */
 export function formatNoInput(): string {
   return `${style.red(CLI_NAME + ": error")}\n  ${style.yellow("no input provided. Pass a file or pipe markdown via stdin.")}\n\n  For usage information, run: ${style.cyan(CLI_HELP_CMD)}`;
 }
@@ -143,9 +157,29 @@ export function parseArgs(argv: string[]): CliOptions {
   return result.data;
 }
 
-/** Read markdown input from a file or stdin. */
+/** Fetch markdown content from a URL. */
+async function fetchUrl(url: string): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (error: unknown) {
+    const detail = error instanceof TypeError ? "unable to reach server" : String(error);
+    throw new Error(formatFetchError(url, detail));
+  }
+
+  if (!response.ok) {
+    throw new Error(formatFetchError(url, `HTTP ${response.status} ${response.statusText}`));
+  }
+
+  return await response.text();
+}
+
+/** Read markdown input from a file, URL, or stdin. */
 export async function readInput(file?: string): Promise<string> {
   if (file) {
+    if (isUrl(file)) {
+      return await fetchUrl(file);
+    }
     const fileRef = Bun.file(file);
     if (!(await fileRef.exists())) {
       throw new Error(formatFileNotFound(file));
