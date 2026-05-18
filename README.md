@@ -37,22 +37,30 @@ markbun README.md --light
 
 ## Options
 
-| Flag                  | Description                            |
-| --------------------- | -------------------------------------- |
-| `--html`, `-H`        | Output as HTML instead of ANSI         |
-| `--out`, `-o <file>`  | Write output to file                   |
-| `--columns`, `-w <n>` | Line width for wrapping (default: 80)  |
-| `--no-color`          | Disable ANSI colors                    |
-| `--hyperlinks`        | Enable clickable OSC 8 hyperlinks      |
-| `--light`             | Use light terminal theme colors        |
-| `--images`            | Display inline images (Kitty protocol) |
-| `--version`, `-v`     | Show version                           |
-| `--help`, `-h`        | Show help                              |
+| Flag                    | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `--html`, `-H`          | Output as HTML instead of ANSI            |
+| `--out`, `-o <file>`    | Write output to file                      |
+| `--columns`, `-w <n>`   | Line width for wrapping (default: 80)     |
+| `--no-color`            | Disable ANSI colors                       |
+| `--hyperlinks`          | Enable clickable OSC 8 hyperlinks         |
+| `--light`               | Use light terminal theme colors           |
+| `--images`              | Display inline images (Kitty protocol)    |
+| `--collapse-whitespace` | Collapse whitespace in text               |
+| `--permissive-atx`      | Allow ATX headers without space after `#` |
+| `--no-indented-code`    | Disable indented code blocks              |
+| `--no-html-blocks`      | Disable HTML blocks                       |
+| `--no-html-spans`       | Disable inline HTML spans                 |
+| `--tag-filter`          | Enable GFM tag filter                     |
+| `--version`, `-v`       | Show version                              |
+| `--help`, `-h`          | Show help                                 |
 
 ## Features
 
 - **Terminal rendering** via `Bun.markdown.ansi()` — headings, lists, tables, code blocks with syntax highlighting, blockquotes, links, images, and horizontal rules
-- **HTML export** via `Bun.markdown.html()` — GitHub Flavored Markdown support (tables, strikethrough, task lists)
+- **HTML export** via `Bun.markdown.html()` — GitHub Flavored Markdown support (tables, strikethrough, task lists) with configurable parser options
+- **Custom rendering** via `render()` — fine-grained control over output with per-element callbacks
+- **React rendering** via `renderToReact()` — render markdown to React JSX elements
 - **Stdin support** — pipe markdown directly into the tool
 - **Fast** — built on Bun's native runtime with zero overhead
 

@@ -13,6 +13,12 @@ describe("parseArgs", () => {
       hyperlinks: false,
       light: false,
       images: false,
+      collapseWhitespace: false,
+      permissiveAtxHeaders: false,
+      noIndentedCodeBlocks: false,
+      noHtmlBlocks: false,
+      noHtmlSpans: false,
+      tagFilter: false,
       version: false,
       help: false,
       file: undefined,
@@ -129,6 +135,36 @@ describe("parseArgs", () => {
 
   test("throws on negative column value", () => {
     expect(() => parseArgs(["--columns", "-1"])).toThrow("columns");
+  });
+
+  test("parses --collapse-whitespace", () => {
+    const opts = parseArgs(["--collapse-whitespace"]);
+    expect(opts.collapseWhitespace).toBe(true);
+  });
+
+  test("parses --permissive-atx", () => {
+    const opts = parseArgs(["--permissive-atx"]);
+    expect(opts.permissiveAtxHeaders).toBe(true);
+  });
+
+  test("parses --no-indented-code", () => {
+    const opts = parseArgs(["--no-indented-code"]);
+    expect(opts.noIndentedCodeBlocks).toBe(true);
+  });
+
+  test("parses --no-html-blocks", () => {
+    const opts = parseArgs(["--no-html-blocks"]);
+    expect(opts.noHtmlBlocks).toBe(true);
+  });
+
+  test("parses --no-html-spans", () => {
+    const opts = parseArgs(["--no-html-spans"]);
+    expect(opts.noHtmlSpans).toBe(true);
+  });
+
+  test("parses --tag-filter", () => {
+    const opts = parseArgs(["--tag-filter"]);
+    expect(opts.tagFilter).toBe(true);
   });
 });
 

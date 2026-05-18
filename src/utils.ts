@@ -22,6 +22,12 @@ ${style.bold("OPTIONS")}
   ${style.cyan("--hyperlinks")}        ${style.dim("Enable clickable links (OSC 8)")}
   ${style.cyan("--light")}             ${style.dim("Use light theme colors")}
   ${style.cyan("--images")}            ${style.dim("Display inline images (Kitty protocol)")}
+  ${style.cyan("--collapse-whitespace")}  ${style.dim("Collapse whitespace in text")}
+  ${style.cyan("--permissive-atx")}       ${style.dim("Allow ATX headers without space after #")}
+  ${style.cyan("--no-indented-code")}     ${style.dim("Disable indented code blocks")}
+  ${style.cyan("--no-html-blocks")}       ${style.dim("Disable HTML blocks")}
+  ${style.cyan("--no-html-spans")}        ${style.dim("Disable inline HTML spans")}
+  ${style.cyan("--tag-filter")}           ${style.dim("Enable GFM tag filter")}
   ${style.cyan("--version")}, ${style.cyan("-v")}      ${style.dim("Show version")}
   ${style.cyan("--help")}, ${style.cyan("-h")}         ${style.dim("Show this help")}
 
@@ -61,6 +67,12 @@ const CliOptionsSchema = z.object({
   images: z.boolean().default(false),
   version: z.boolean().default(false),
   help: z.boolean().default(false),
+  collapseWhitespace: z.boolean().default(false),
+  permissiveAtxHeaders: z.boolean().default(false),
+  noIndentedCodeBlocks: z.boolean().default(false),
+  noHtmlBlocks: z.boolean().default(false),
+  noHtmlSpans: z.boolean().default(false),
+  tagFilter: z.boolean().default(false),
 });
 
 /** Parsed CLI options after validation. */
@@ -128,6 +140,24 @@ export function parseArgs(argv: string[]): CliOptions {
         break;
       case "--images":
         options.images = true;
+        break;
+      case "--collapse-whitespace":
+        options.collapseWhitespace = true;
+        break;
+      case "--permissive-atx":
+        options.permissiveAtxHeaders = true;
+        break;
+      case "--no-indented-code":
+        options.noIndentedCodeBlocks = true;
+        break;
+      case "--no-html-blocks":
+        options.noHtmlBlocks = true;
+        break;
+      case "--no-html-spans":
+        options.noHtmlSpans = true;
+        break;
+      case "--tag-filter":
+        options.tagFilter = true;
         break;
       case "--version":
       case "-v":

@@ -26,7 +26,14 @@ async function main(): Promise<void> {
   let output: string;
 
   if (opts.outputFormat === "html") {
-    output = renderToHtml(markdown);
+    output = renderToHtml(markdown, {
+      collapseWhitespace: opts.collapseWhitespace,
+      permissiveAtxHeaders: opts.permissiveAtxHeaders,
+      noIndentedCodeBlocks: opts.noIndentedCodeBlocks,
+      noHtmlBlocks: opts.noHtmlBlocks,
+      noHtmlSpans: opts.noHtmlSpans,
+      tagFilter: opts.tagFilter,
+    });
   } else if (opts.noColor) {
     output = renderToPlain(markdown);
   } else {
