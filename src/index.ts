@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { renderToAnsi, renderToPlain, style } from "./ansi";
 import { renderToHtml } from "./html";
-import { CLI_NAME, formatNoInput, parseArgs, printHelp, printVersion, readInput } from "./utils";
+import { CLI_NAME, parseArgs, printHelp, printVersion, readInput } from "./utils";
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
@@ -19,8 +19,8 @@ async function main(): Promise<void> {
   const markdown = await readInput(opts.file);
 
   if (!markdown.trim()) {
-    console.error(formatNoInput());
-    process.exit(1);
+    printHelp();
+    process.exit(0);
   }
 
   let output: string;
